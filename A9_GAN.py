@@ -131,6 +131,8 @@ criterion = nn.BCEWithLogitsLoss()
 
 target1 = torch.Tensor([1,]*batchSize + [0,]*batchSize).to(dev).view(-1,1)
 target2 = torch.Tensor([1,]*batchSize).to(dev).view(-1,1)
+#print ("target1 " , target1 )
+#print ("target " , target2 )
 
 for epoch in range(numEpoch):
     for batch_idx,data in enumerate(trainLoader):
@@ -153,11 +155,14 @@ for epoch in range(numEpoch):
 
         dopt.zero_grad()
         for k in range(discIter):
+            #ie discriminator's prediction
             logit = disc(torch.cat((data,xhat.detach()),0))
+ #           print("logit ", logit)
+#            print("target1 " , target1)
             ##############################
             ## implement the discriminator loss (-logD trick)
             ##############################
-            loss = criterion(, )
+            loss = criterion(-logit,target1 )
             print("E: %d; B: %d; DLoss: %f" % (epoch,batch_idx,loss.item()))
             loss.backward()
             dopt.step()
@@ -166,11 +171,12 @@ for epoch in range(numEpoch):
         gopt.zero_grad()
         for k in range(genIter):
             xhat = gen(z)
+            #ie discriminator's prediction
             logit = disc(xhat)
             ##############################
             ## implement the generator loss (-logD trick)
             ##############################
-            loss = criterion(, )
+            loss = criterion(-logit,target2)
             loss.backward()
             print("E: %d; B: %d; GLoss: %f" % (epoch,batch_idx,loss.item()))
             gopt.step()
